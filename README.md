@@ -3,7 +3,9 @@
 Code, test data and evaluation notebooks for the paper
 
 > Adarsh Jain, Pawan Bharadwaj and Chandra Sekhar Seelamantula,
-> *Multiscale Learning for Downward Continuation of Gravity Data*. <!-- TODO: journal, year, DOI -->
+> *Multiscale Learning for Downward Continuation of Gravity Data* (under review).
+> An earlier version is available as a preprint: *Cold-Diffusion Driven Downward Continuation of Gravity
+> Data*, [arXiv:2510.21191](https://doi.org/10.48550/arXiv.2510.21191).
 
 This repository reproduces every entry of **Table 2** (synthetic data) and **Table 3** (field data) of the
 paper: 14 approaches, 4 metrics each, mean ± standard deviation to 4 decimals. The pretrained weights
@@ -190,14 +192,38 @@ Zenodo record and are not covered by these licenses.
 
 ## Citation
 
-If you use this code, the pretrained weights or the datasets, please cite:
+If you use this code, the pretrained weights or the datasets, please cite the paper. Until the journal
+version is published, please cite the preprint of its earlier version:
+
+> Jain, A., Bharadwaj, P., & Seelamantula, C. S. (2025). *Cold-Diffusion Driven Downward Continuation of
+> Gravity Data*. arXiv preprint arXiv:2510.21191. https://doi.org/10.48550/arXiv.2510.21191
 
 ```bibtex
-@article{jain_multiscale_dc,
-  title   = {Multiscale Learning for Downward Continuation of Gravity Data},
-  author  = {Jain, Adarsh and Bharadwaj, Pawan and Seelamantula, Chandra Sekhar},
-  journal = {TODO},
-  year    = {TODO},
-  doi     = {TODO}
+@misc{jain2025colddiffusion,
+  title         = {Cold-Diffusion Driven Downward Continuation of Gravity Data},
+  author        = {Jain, Adarsh and Bharadwaj, Pawan and Seelamantula, Chandra Sekhar},
+  year          = {2025},
+  eprint        = {2510.21191},
+  archivePrefix = {arXiv},
+  primaryClass  = {physics.geo-ph},
+  doi           = {10.48550/arXiv.2510.21191},
+  url           = {https://arxiv.org/abs/2510.21191}
+}
+```
+
+If you use the pretrained weights or the datasets, please also cite the Zenodo record:
+
+> Jain, A., Bharadwaj, P., & Seelamantula, C. S. (2026). *Pretrained weights and synthetic datasets for "Multiscale Learning for Downward Continuation of Gravity Data"* (Version 1.0) [Data set].
+> Zenodo. https://doi.org/10.5281/zenodo.24340552
+
+```bibtex
+@misc{jain_multiscale_dc_zenodo,
+  title     = {Pretrained weights and synthetic datasets for ``Multiscale Learning for Downward Continuation of Gravity Data''},
+  author    = {Jain, Adarsh and Bharadwaj, Pawan and Seelamantula, Chandra Sekhar},
+  year      = {2026},
+  publisher = {Zenodo},
+  version   = {1.0},
+  doi       = {10.5281/zenodo.24340552},
+  url       = {https://doi.org/10.5281/zenodo.24340552}
 }
 ```

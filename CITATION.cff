@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "If you use this code, the pretrained weights or the datasets, please cite the paper below."
+message: "If you use this code, please cite the paper below (the preprint of its earlier version until the journal version is published). If you use the pretrained weights or the datasets, please also cite the Zenodo record (DOI 10.5281/zenodo.24340552) listed under references."
 title: "Multiscale Learning for Downward Continuation of Gravity Data: code to reproduce Tables 2 and 3"
 type: software
 license: MIT
@@ -19,8 +19,9 @@ authors:
     given-names: Chandra Sekhar
     affiliation: "Indian Institute of Science, Bengaluru"
 preferred-citation:
+  # earlier version of the paper; replace with the journal article once it is published
   type: article
-  title: "Multiscale Learning for Downward Continuation of Gravity Data"
+  title: "Cold-Diffusion Driven Downward Continuation of Gravity Data"
   authors:
     - family-names: Jain
       given-names: Adarsh
@@ -28,4 +29,23 @@ preferred-citation:
       given-names: Pawan
     - family-names: Seelamantula
       given-names: Chandra Sekhar
-  # TODO after acceptance: add  journal: "...",  year: ...,  doi: "..."
+  journal: "arXiv preprint arXiv:2510.21191"
+  year: 2025
+  doi: "10.48550/arXiv.2510.21191"
+  url: "https://arxiv.org/abs/2510.21191"
+references:
+  - type: dataset
+    title: "Pretrained weights and synthetic datasets for \"Multiscale Learning for Downward Continuation of Gravity Data\""
+    authors:
+      - family-names: Jain
+        given-names: Adarsh
+      - family-names: Bharadwaj
+        given-names: Pawan
+      - family-names: Seelamantula
+        given-names: Chandra Sekhar
+    publisher:
+      name: Zenodo
+    version: "1.0"
+    year: 2026
+    doi: "10.5281/zenodo.24340552"
+    url: "https://doi.org/10.5281/zenodo.24340552"

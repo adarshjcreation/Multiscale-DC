@@ -1,0 +1,10 @@
+# Exact versions used to produce Tables 2 and 3 (Python 3.11.6, CUDA 12.8, cuDNN 9.10, NVIDIA RTX 3090).
+# Other recent versions should also work, but the last decimal of some metrics may then differ.
+torch==2.9.0
+numpy==2.2.6
+scipy==1.13.1
+scikit-image==0.25.2
+einops==0.8.1
+timm==1.0.22       # DiT building blocks
+matplotlib==3.10.6
+jupyter            # notebooks; scripts/run_all.sh uses jupyter nbconvert

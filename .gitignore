@@ -1,0 +1,13 @@
+# model weights are distributed through Zenodo (see README.md, scripts/download_weights.py)
+*.pth
+*.pth.part
+# field test data: may not be redistributed (see table3_field/data/README.md)
+table3_field/data/test/*
+!table3_field/data/test/.gitkeep
+# synthetic datasets from Zenodo (scripts/download_data.py)
+datasets/
+*.zip
+# outputs of scripts/train_physics_trained.py
+table3_field/results/physics_fit_seed*.csv
+__pycache__/
+.ipynb_checkpoints/

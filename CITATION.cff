@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+message: "If you use this code, the pretrained weights or the datasets, please cite the paper below."
+title: "Multiscale Learning for Downward Continuation of Gravity Data: code to reproduce Tables 2 and 3"
+type: software
+license: MIT
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.24340552"
+    description: "Pretrained weights and synthetic datasets (Zenodo)"
+repository-code: "https://github.com/adarshjcreation/Multiscale_DC"
+authors:
+  - family-names: Jain
+    given-names: Adarsh
+    affiliation: "Indian Institute of Science, Bengaluru"
+  - family-names: Bharadwaj
+    given-names: Pawan
+    affiliation: "Indian Institute of Science, Bengaluru"
+  - family-names: Seelamantula
+    given-names: Chandra Sekhar
+    affiliation: "Indian Institute of Science, Bengaluru"
+preferred-citation:
+  type: article
+  title: "Multiscale Learning for Downward Continuation of Gravity Data"
+  authors:
+    - family-names: Jain
+      given-names: Adarsh
+    - family-names: Bharadwaj
+      given-names: Pawan
+    - family-names: Seelamantula
+      given-names: Chandra Sekhar
+  # TODO after acceptance: add  journal: "...",  year: ...,  doi: "..."

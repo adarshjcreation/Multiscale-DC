@@ -2,9 +2,7 @@
 
 Code, test data and evaluation notebooks for the paper
 
-> Adarsh Jain, Pawan Bharadwaj and Chandra Sekhar Seelamantula,
-> *Multiscale Learning for Downward Continuation of Gravity Data* (under review).
-> An earlier version is available as a preprint: *Cold-Diffusion Driven Downward Continuation of Gravity
+> An earlier version of this work is available as a preprint: *Cold-Diffusion Driven Downward Continuation of Gravity
 > Data*, [arXiv:2510.21191](https://doi.org/10.48550/arXiv.2510.21191).
 
 This repository reproduces every entry of **Table 2** (synthetic data) and **Table 3** (field data) of the

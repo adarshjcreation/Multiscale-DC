@@ -15,11 +15,15 @@ redistributed and are not included (see [Data](#data)); for Table 3 the reposito
 weights, the per-patch metrics of every row and checksums of the 10 test patches, so that the table can be
 reproduced exactly with the data.
 
+The pretrained networks can also be applied to **your own gravity data**: the `multiscale_dc` package
+continues any gridded gravity anomaly downward in one call (see
+[Use the networks on your own data](#use-the-networks-on-your-own-data)).
+
 ## Quick start
 
 ```bash
-git clone https://github.com/adarshjcreation/Multiscale_DC.git
-cd Multiscale_DC
+git clone https://github.com/adarshjcreation/Multiscale-DC.git
+cd Multiscale-DC
 conda create -n gravdc python=3.11 -y && conda activate gravdc
 pip install -r requirements.txt
 python scripts/download_weights.py      # about 12 GB from Zenodo, every file MD5-checked
@@ -41,6 +45,123 @@ Every notebook prints its result next to the value in the paper. The last notebo
 four metrics (mean and standard deviation) agree with the paper to 4 decimals, and writes
 `results/table2.md` / `results/table3.md` (and `.csv`).
 
+## Use the networks on your own data
+
+The `multiscale_dc` package applies the pretrained multiscale networks to any gridded gravity anomaly, of
+any size and in any unit. Run the commands in the repository folder (or add the folder to `PYTHONPATH`):
+
+```bash
+python scripts/download_weights.py --table 3     # the field weights, used by default (about 6 GB)
+python -m multiscale_dc examples/data/example_obs_h100m.csv --spacing 50 --height 100 --plot result.png
+```
+
+The same in Python:
+
+```python
+from multiscale_dc import downward_continue, load_grid, save_grid
+
+g_obs = load_grid("examples/data/example_obs_h100m.csv")  # 64 x 96 nodes, mGal, 50 m spacing, observed 100 m up
+g_0 = downward_continue(g_obs, spacing=50, height=100)     # continued 100 m downward: same shape and unit
+save_grid("example_ground.csv", g_0)
+```
+
+### Example
+
+![Downward continuation of a new gravity grid](docs/new_grid_example.png)
+
+**(a)** A new 3-D density model, not part of any training or test set: 64 x 96 x 16 cells of 50 m with six
+bodies of positive and negative density contrast. Its gravity anomaly was computed with the exact prism
+formula **(b)** 100 m above the ground (the input) and **(d)** on the ground (the truth). **(c)** The Multiscale
+U-Net continues the observations 100 m downward. **(f)** It recovers the amplitude of the shallow ore body and
+separates the twin bodies, 150 m apart, which merge into one anomaly at 100 m height. PSNR against the truth
+(without the outer 4 nodes) rises from 28.5 dB for the observations to 47.8 dB. Reproduce with
+`python examples/new_grid_example.py`; it also writes the input grid used in the commands above.
+
+### How it works
+
+```mermaid
+flowchart LR
+    A["Observed grid<br/>height h, spacing Δ<br/>any size ≥ 32 × 32"] --> B["Extend the edges<br/>by 16 nodes"]
+    B --> C["Cut into overlapping<br/>32 × 32 tiles"]
+    C --> D["Scale each tile<br/>to the training range"]
+    D --> E["Multiscale DC<br/>T = h / (0.05 Δ) steps"]
+    E --> F["Scale back<br/>to data units"]
+    F -->|"refine the range<br/>(2 to 5 passes)"| D
+    F --> G["Blend the tiles,<br/>crop the edges"]
+    G --> H["Grid continued<br/>h downward"]
+```
+
+Inside "Multiscale DC" (the Stabilized DC routine of the paper), for each tile:
+
+```mermaid
+flowchart LR
+    Y["x_T = observed tile"] --> R["Network R(x_t, t)<br/>estimates the ground-level tile x̂₀"]
+    R --> S["x_(t-1) = x_t − A^t x̂₀ + A^(t-1) x̂₀<br/>A = upward continuation by 0.05 Δ"]
+    S -->|"t = T, T-1, ..., 1"| R
+    S --> O["x₀ = tile at the level of the result"]
+```
+
+* **Tiles.** The networks were trained on 32 x 32 grids. A larger grid is extended by 16 nodes on every side
+  (values ramping linearly to the median of the grid, against edge effects), cut into 32 x 32 tiles every 8
+  nodes, and put back together with smooth (Hann) weights, which favour the centre of each tile.
+* **Scaling.** Each training grid was scaled to [-1, 1] at ground level. For new data that range is not known;
+  it is estimated from the observations and refined over a few passes (2 for the U-Net, 5 for the DiT). The
+  result is in the unit of the input, and a constant added to the input is added unchanged to the result.
+* **Steps.** One network step is an upward continuation by 0.05 grid spacings; continuing by `height` takes
+  `height / (0.05 x spacing)` steps, at most 40 (2 grid spacings, as in training). Only the ratio height /
+  spacing matters, so the same networks serve a 50 m grid at 100 m height and a 400 m grid at 800 m height.
+
+### Inputs, outputs and options
+
+| Python argument | Command line | Meaning | Default |
+|---|---|---|---|
+| `grid` | input file | gravity anomaly at the observation level on a regular grid (rows = y, columns = x), same spacing in x and y, at least 32 x 32 nodes, no gaps; any unit (mGal, µm/s²). Files: `.npy`, `.csv` / `.txt` (one grid row per line), `.mat` (variable `--var`) | required |
+| `spacing` | `--spacing` | grid spacing, e.g. in m | required |
+| `height` | `--height` | continuation distance, in the unit of the spacing: the observations lie this far above the level of the result. At most 2 x spacing, in steps of 0.05 x spacing | required |
+| `model` | `--model` | `multiscale_unet` or `multiscale_dit` | `multiscale_unet` |
+| `weights` | `--weights` | `field` (trained on positive and negative density contrasts; Table 3) or `synthetic` (positive contrasts only; Table 2) | `field` |
+| `routine` | `--routine` | `stabilized`, `single-shot` (one network evaluation, fastest) or `recursive` | `stabilized` |
+| `passes` | `--passes` | number of scaling passes | 2 (U-Net), 5 (DiT) |
+| `stride` | `--stride` | step between the tiles, in nodes (smaller: smoother, slower) | 8 |
+| `pad` | `--pad` | edge extension in nodes (0: off) | 16 |
+| `device` | `--device` | `cuda` or `cpu` | `cuda` if available |
+| returns | `-o` | the downward-continued grid, same shape and unit as the input (`.npy` or `.csv`) | `<input>_dc.npy` |
+| – | `--plot` | figure of the input and the result (PNG) | – |
+
+Two helpers are useful for checks and tests: `multiscale_dc.upward_continue_grid(g_0, spacing, height)`
+continues a result back up, which should give back the observations, and
+`multiscale_dc.forward.grid_gravity(model, cell, height)` computes the exact gravity of a 3-D density model,
+as in the example. `python -m multiscale_dc --help` lists all options.
+
+### Accuracy and limitations
+
+* **Accuracy.** We tested the tool on observations computed with the exact prism formula, not with the
+  continuation operator of the networks. PSNR against the true ground-level field (without the outer 4 nodes),
+  default settings:
+
+  | Test | Observations | Multiscale U-Net (default) | Multiscale DiT |
+  |---|---|---|---|
+  | 10 density models of the Table-2 test set, positive contrasts | 19.2 dB | **35.8 dB** | 34.0 dB |
+  | the same models with negative contrasts | 19.2 dB | **35.7 dB** | 33.5 dB |
+  | the example above (64 x 96 nodes) | 28.5 dB | **47.8 dB** | 44.6 dB |
+
+  All with field weights, continued 100 m (2 grid spacings) downward. These numbers are not comparable with
+  Table 2, where the observations are computed with the continuation operator itself.
+* **Height.** At most 2 grid spacings. For a larger continuation distance, first resample the grid to a
+  spacing of at least `height / 2`.
+* **Noise.** The networks were trained on noise-free data, and downward continuation amplifies
+  short-wavelength noise. On the 10 test models (Multiscale U-Net), smooth (spatially correlated) noise of
+  2 % of the data range still left a clear gain (19.2 → 24.9 dB), and so did uncorrelated noise of 0.5 %
+  (19.2 → 22.2 dB), but uncorrelated noise of 2 % made the result worse than the observations
+  (19.2 → 13.8 dB). Low-pass filter noisy grids before the continuation.
+* **Geology.** Downward continuation is valid only above all sources: the level of the result must lie above
+  the shallowest source. The networks learned compact bodies down to 8 (field weights) or 16 (synthetic
+  weights) grid spacings below that level.
+* **Edges.** The outermost few nodes are the least accurate, even with the edge extension.
+* **Runtime.** On an RTX 3090 the 64 x 96 example takes 16 s with the Multiscale U-Net and about 4 minutes
+  with the Multiscale DiT (larger network, 5 passes). On a CPU, a 32 x 32 grid takes about a minute with the
+  U-Net, with the same result as on the GPU (to 4 x 10⁻⁶ of the data range).
+
 ## Repository layout
 
 ```
@@ -54,6 +175,9 @@ table3_field/                 Table 3: 10 field test patches (32 x 32 nodes, 400
     scripts/                    run_all.sh, check_weights.py (table3_field also check_data.py and
                                 train_physics_trained.py)
     README.md                   protocol, methods and reproducibility checks of this table in detail
+multiscale_dc/                apply the pretrained networks to new gravity grids (Python and command line)
+    forward.py                  exact gravity of a 3-D density model (rectangular prisms), for test data
+examples/new_grid_example.py  example on a new density model; writes examples/data/ and docs/new_grid_example.png
 scripts/download_weights.py   downloads and checks the weights of both tables
 scripts/download_data.py      downloads the synthetic datasets into datasets/ (optional)
 scripts/run_all.sh            runs both folders
@@ -171,8 +295,13 @@ Each `data<i>.mat` file holds two variables:
 * `d` (1,024 x 1, float64): the gravity anomaly in mGal on the 32 x 32 observation grid; the code reads it
   as `d.reshape(32, 32)` and scales each grid to [-1, 1] (`gravdc/data.py`).
 * `m` (16,384 x 1, 16-bit integer): the density-contrast model in kg/m³ on 32 x 32 x 16 cells (zero outside
-  the anomalous body); `m.reshape(16, 32, 32)[k]` is the k-th of the 16 layers, on the same horizontal grid
-  as `d.reshape(32, 32)`.
+  the anomalous body); `m.reshape(16, 32, 32)[k]` is the k-th of the 16 layers (k = 0 at the top), on the
+  same horizontal grid as `d.reshape(32, 32)`.
+
+Cell size: 50 x 50 x 50 m in `synthetic_train` and `synthetic_test` (model down to 800 m depth), and
+400 x 400 x 200 m in `field_train` (down to 3.2 km). The observation points lie at the cell centres of the top
+face of the model; `d` is the exact gravity of the prisms there, which `multiscale_dc.forward.grid_gravity`
+reproduces.
 
 ## Pretrained weights
 

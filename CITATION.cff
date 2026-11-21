@@ -12,12 +12,7 @@ authors:
   - family-names: Jain
     given-names: Adarsh
     affiliation: "Indian Institute of Science, Bengaluru"
-  - family-names: Bharadwaj
-    given-names: Pawan
-    affiliation: "Indian Institute of Science, Bengaluru"
-  - family-names: Seelamantula
-    given-names: Chandra Sekhar
-    affiliation: "Indian Institute of Science, Bengaluru"
+    orcid: "https://orcid.org/0000-0002-7239-6994"
 preferred-citation:
   # earlier version of the paper; replace with the journal article once it is published
   type: article

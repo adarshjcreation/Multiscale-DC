@@ -5,16 +5,17 @@ field gravity data. It contains the code, the pretrained weights (downloaded sep
 method and the per-patch metrics of every row. Running the notebooks regenerates every entry of the table and
 checks it against the reference values.
 
-**The field data are not included.** The 10 test patches were provided by the Geological Survey of India
-and cannot be redistributed; see `data/README.md` for the expected files and their MD5 checksums. With the
-data in `data/test/`, the table reproduces exactly. The executed notebooks in this repository were run with
-the data, but their figures of the data are switched off (`SHOW_FIGURE = False` in the last cell).
+**The field data are on Zenodo.** The 10 test patches, provided by the Geological Survey of India (Ganguli et
+al., 2019), are in the Zenodo record (`field_test.zip`), not in git: `python scripts/download_data.py
+field_test` in the top folder of the repository puts them in `data/test/` (see `data/README.md` for the files
+and their MD5 checksums). With the data, the table reproduces exactly. The figures in the executed notebooks
+are switched off (`SHOW_FIGURE = False` in the last cell); set it to `True` to look at a reconstruction.
 
 ## Contents
 
 ```
 data/test/                10 field test patches (.mat, variable `d`, 32 x 32 nodes, 400 m spacing);
-                          not included, see data/README.md
+                          downloaded from Zenodo, see data/README.md
 gravdc/                   Python package shared by the notebooks
   data.py                   loading + per-patch scaling to [-1, 1]
   physics.py                upward-continuation operators (single 800 m step; multiscale 40 x 20 m)
@@ -45,8 +46,8 @@ scripts/train_physics_trained.py   regenerates weights/physics_trained.pth (fit 
 pip install -r ../requirements.txt                 # exact package versions (repository root)
 python ../scripts/download_weights.py --table 3   # weights from Zenodo into weights/, MD5-checked
 python scripts/check_weights.py                    # optional: check the weight files again
-# copy the 10 field test patches into data/test/ (not included, see data/README.md), then
-python scripts/check_data.py
+python ../scripts/download_data.py field_test     # the 10 field test patches from Zenodo into data/test/
+python scripts/check_data.py                       # optional: check them again
 ```
 
 A CUDA GPU is recommended. Everything also runs on CPU (see Reproducibility).

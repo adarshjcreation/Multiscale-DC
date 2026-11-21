@@ -1,6 +1,7 @@
 """Check the field test patches in data/test against their MD5 checksums.  Usage: python scripts/check_data.py
 
-The field data cannot be redistributed and are not part of the repository (see data/README.md).
+The field data are on Zenodo, not in the git repository: python scripts/download_data.py field_test (from the
+top folder of the repository) downloads them into data/test (see data/README.md).
 """
 import hashlib
 import os
@@ -35,5 +36,6 @@ if extra:
     print("unexpected files (the notebooks read every .mat file in data/test):", ", ".join(extra))
     ok = False
 if not ok:
-    print("The field data are not included in the repository; see data/README.md.")
+    print("Download the field data from Zenodo: python scripts/download_data.py field_test "
+          "(from the top folder of the repository); see data/README.md.")
 sys.exit(0 if ok else 1)

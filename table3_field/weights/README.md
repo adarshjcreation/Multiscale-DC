@@ -27,7 +27,7 @@ raw training weights (no exponential moving average).
 TTSIDC and TRDC are classical methods and have no weights. Total size about 6 GB.
 
 `physics_trained.pth` has no training set: it is fitted to the 10 test observations through the physics loss
-only (the ground truth is never used for fitting). With the field data in `data/test/` (not included),
+only (the ground truth is never used for fitting). With the field data in `data/test/` (from Zenodo),
 `python scripts/train_physics_trained.py --out
 weights/physics_trained.pth` regenerates it (10,000 updates, seed 0, about 16 minutes on an RTX 3090); on
 the tested environment two independent fits gave bit-identical weights and the same MD5 as above.

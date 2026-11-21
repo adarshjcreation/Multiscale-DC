@@ -7,13 +7,12 @@ Code, test data and evaluation notebooks for the paper
 
 This repository reproduces every entry of **Table 2** (synthetic data) and **Table 3** (field data) of the
 paper: 14 approaches, 4 metrics each, mean ± standard deviation to 4 decimals. The pretrained weights
-(16 files, about 12 GB) and the synthetic datasets (the training sets of both tables and the synthetic test
-set, about 360 MB) are archived on Zenodo: **DOI [10.5281/zenodo.24340552](https://doi.org/10.5281/zenodo.24340552)**.
+(16 files, about 12 GB) and the datasets (the 10 field test patches of Table 3, the synthetic test set and the
+training sets of both tables, about 360 MB) are archived on Zenodo:
+**DOI [10.5281/zenodo.24340552](https://doi.org/10.5281/zenodo.24340552)**.
 
-Table 2 can be reproduced from this repository and the weights alone. The field data of Table 3 cannot be
-redistributed and are not included (see [Data](#data)); for Table 3 the repository provides the code, the
-weights, the per-patch metrics of every row and checksums of the 10 test patches, so that the table can be
-reproduced exactly with the data.
+Both tables can be reproduced from this repository, the weights and, for Table 3, the field test patches
+(`python scripts/download_data.py field_test`; see [Data](#data)).
 
 The pretrained networks can also be applied to **your own gravity data**: the `multiscale_dc` package
 continues any gridded gravity anomaly downward in one call (see
@@ -27,8 +26,9 @@ cd Multiscale-DC
 conda create -n gravdc python=3.11 -y && conda activate gravdc
 pip install -r requirements.txt
 python scripts/download_weights.py      # about 12 GB from Zenodo, every file MD5-checked
-bash scripts/run_all.sh                 # Table 2: about 5 minutes on an RTX 3090 (Table 3: see below)
-python scripts/download_data.py         # optional: the synthetic datasets, into datasets/ (see Datasets)
+python scripts/download_data.py field_test   # the 10 field test patches of Table 3 (0.1 MB), MD5-checked
+bash scripts/run_all.sh                 # both tables: about 5 + 8.5 minutes on an RTX 3090
+python scripts/download_data.py         # optional: also the training sets, into datasets/ (see Datasets)
 ```
 
 `scripts/run_all.sh` executes the notebooks with the Jupyter kernel `python3`. If your environment is
@@ -36,9 +36,9 @@ registered under another kernel name, run `KERNEL=<name> bash scripts/run_all.sh
 environment with `python -m ipykernel install --user --name gravdc`). The notebooks can also be run by hand,
 01 to 10 and then 00, in each of the two folders.
 
-`scripts/run_all.sh` runs Table 3 as well (about 8.5 more minutes) when the 10 field test patches are in
-`table3_field/data/test`; `python table3_field/scripts/check_data.py` checks them against their MD5 checksums.
-Without the data, Table 3 is skipped.
+`scripts/run_all.sh` runs Table 3 when the 10 field test patches are in `table3_field/data/test`, where
+`download_data.py field_test` puts them; `python table3_field/scripts/check_data.py` checks them against their
+MD5 checksums. Without the data, Table 3 is skipped.
 
 Every notebook prints its result next to the value in the paper. The last notebook of each folder
 (`00_Reproduce_Table2.ipynb`, `00_Reproduce_Table3.ipynb`) assembles the table, marks a row with ✓ when all
@@ -167,7 +167,7 @@ as in the example. `python -m multiscale_dc --help` lists all options.
 ```
 table2_synthetic/             Table 2: 10 synthetic test grids (32 x 32 nodes, 50 m spacing), 100 m continuation
 table3_field/                 Table 3: 10 field test patches (32 x 32 nodes, 400 m spacing), 800 m continuation
-    data/test/                  test grids (.mat files, variables d and m); the field data are not included
+    data/test/                  test grids (.mat files); the field patches come from Zenodo (download_data.py)
     gravdc/                     Python package: forward operators, metrics, classical methods, samplers, networks
     notebooks/                  01-10: one notebook per approach; 00: assembles and checks the table
     results/                    per-grid metrics of every row (JSON) and the assembled table (md, csv)
@@ -179,7 +179,7 @@ multiscale_dc/                apply the pretrained networks to new gravity grids
     forward.py                  exact gravity of a 3-D density model (rectangular prisms), for test data
 examples/new_grid_example.py  example on a new density model; writes examples/data/ and docs/new_grid_example.png
 scripts/download_weights.py   downloads and checks the weights of both tables
-scripts/download_data.py      downloads the synthetic datasets into datasets/ (optional)
+scripts/download_data.py      downloads the datasets: field test patches (Table 3) and training sets
 scripts/run_all.sh            runs both folders
 requirements.txt              exact package versions
 ```
@@ -269,28 +269,33 @@ The README of each folder gives the parameters of every method and how they were
 
 * **Synthetic test grids** (`table2_synthetic/data/test`, also on Zenodo as `synthetic_test.zip`): 10
   synthetic grids of 32 x 32 nodes with 50 m spacing, with their density models (see Datasets below).
-* **Field test patches** (Table 3): 10 patches of 32 x 32 nodes (400 m spacing) of the Bouguer gravity
-  anomaly of the Mangampeta region (southern Cuddapah basin, Andhra Pradesh, India), provided by the
-  Geological Survey of India (Ganguli et al., 2019). These data cannot be redistributed and are **not
-  included**. `table3_field/data/README.md` lists the expected files and their MD5 checksums; with the data
-  in `table3_field/data/test`, Table 3 reproduces exactly. Without them, `table3_field/results/` still
-  holds the per-patch metrics of every row, from which `00_Reproduce_Table3.ipynb` assembles the table.
-  The executed Table-3 notebooks contain no figures of the field data.
+* **Field test patches** (Table 3; on Zenodo as `field_test.zip`): 10 patches of 32 x 32 nodes (400 m
+  spacing) of the Bouguer gravity anomaly of the Mangampeta region (southern Cuddapah basin, Andhra Pradesh,
+  India), provided by the Geological Survey of India (Ganguli et al., 2019). `python scripts/download_data.py
+  field_test` downloads them into `table3_field/data/test`, where Table 3 reproduces exactly with them;
+  `table3_field/data/README.md` lists the files and their MD5 checksums. `table3_field/results/` also holds
+  the per-patch metrics of every row, from which `00_Reproduce_Table3.ipynb` assembles the table.
 * **Training sets**: on Zenodo (below). They are not needed to reproduce the tables.
+
+> Ganguli, S.S., Singh, S., Das, N., Maurya, D., Pal, S.K., Rama Rao, J.V., 2019. Gravity and magnetic survey
+> in southwestern part of Cuddapah Basin, India and its implication for shallow crustal architecture and
+> mineralization. Journal of the Geological Society of India 93, 419–430.
 
 ### Datasets on Zenodo
 
-`python scripts/download_data.py` downloads the three archives, checks their MD5 and unpacks them into
-`datasets/` (`python scripts/download_data.py synthetic_train` fetches one of them). The data are synthetic,
-generated with the random-walk method of Huang et al. (2021); the original files are included unchanged.
+`python scripts/download_data.py` downloads the four archives, checks their MD5 and unpacks them into
+`datasets/` (`python scripts/download_data.py synthetic_train` fetches one of them; `field_test` is also
+copied to `table3_field/data/test`). Apart from `field_test`, the data are synthetic, generated with the
+random-walk method of Huang et al. (2021); the original files are included unchanged.
 
 | Dataset | Files | Grid spacing | Density contrast | Used for |
 |---|---|---|---|---|
+| `field_test` | 10 | 400 m | – (field data; variable `d` only) | test set of Table 3 |
 | `synthetic_train` | 22,000 | 50 m | +1.0 g/cm³ | training set of the Table-2 networks |
 | `synthetic_test` | 10 | 50 m | +1.0 g/cm³ | test set of Table 2 (= `table2_synthetic/data/test`) |
 | `field_train` | 22,000 | 400 m | −1.0, −0.5, +0.5, +1.0 g/cm³, 5,500 files each (`data0`–`data5499`, `data5500`–`data10999`, `data11000`–`data16499`, `data16500`–`data21999`) | training set of the Table-3 networks |
 
-Each `data<i>.mat` file holds two variables:
+Each `data<i>.mat` file of the synthetic datasets holds two variables (the field patches only `d`):
 
 * `d` (1,024 x 1, float64): the gravity anomaly in mGal on the 32 x 32 observation grid; the code reads it
   as `d.reshape(32, 32)` and scales each grid to [-1, 1] (`gravdc/data.py`).
@@ -313,9 +318,9 @@ lists every file, the method it belongs to and its MD5.
 
 ## License
 
-The code is released under the MIT License (see `LICENSE`). The pretrained weights and the synthetic
-datasets on Zenodo are released under CC BY 4.0. The field data are not part of this repository or of the
-Zenodo record and are not covered by these licenses.
+The code is released under the MIT License (see `LICENSE`). The pretrained weights and the datasets on
+Zenodo are released under CC BY 4.0. The field test patches were provided by the Geological Survey of India;
+if you use them, please also cite Ganguli et al. (2019).
 
 ## Citation
 
@@ -340,13 +345,13 @@ version is published, please cite the preprint of its earlier version:
 
 If you use the pretrained weights or the datasets, please also cite the Zenodo record:
 
-> Jain, A., Bharadwaj, P., & Seelamantula, C. S. (2026). *Pretrained weights and synthetic datasets for "Multiscale Learning for Downward Continuation of Gravity Data"* (Version 1.0) [Data set].
+> Jain, A. (2026). *Pretrained weights and datasets for "Multiscale Learning for Downward Continuation of Gravity Data"* (Version 1.0) [Data set].
 > Zenodo. https://doi.org/10.5281/zenodo.24340552
 
 ```bibtex
 @misc{jain_multiscale_dc_zenodo,
-  title     = {Pretrained weights and synthetic datasets for ``Multiscale Learning for Downward Continuation of Gravity Data''},
-  author    = {Jain, Adarsh and Bharadwaj, Pawan and Seelamantula, Chandra Sekhar},
+  title     = {Pretrained weights and datasets for ``Multiscale Learning for Downward Continuation of Gravity Data''},
+  author    = {Jain, Adarsh},
   year      = {2026},
   publisher = {Zenodo},
   version   = {1.0},

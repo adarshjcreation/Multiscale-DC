@@ -1,16 +1,18 @@
-"""Download the synthetic datasets from Zenodo (DOI 10.5281/zenodo.24340552) into datasets/.
+"""Download the datasets from Zenodo (DOI 10.5281/zenodo.24340552) into datasets/.
 
-The datasets are not needed to reproduce Tables 2 and 3 (the 10 synthetic test grids are also in
-table2_synthetic/data/test). Each archive is checked against its MD5, unpacked into datasets/<name>/ and deleted.
+Each archive is checked against its MD5, unpacked into datasets/<name>/ and deleted.
 
+    field_test        the 10 field test patches of Table 3 (Bouguer gravity, GSI)                 (0.1 MB)
+                      also copied to table3_field/data/test, where the Table-3 notebooks read them
     synthetic_train   22,000 grids, 50 m spacing: training set of the Table-2 networks          (177 MB)
-    synthetic_test    the 10 synthetic test grids of Table 2                                      (0.1 MB)
+    synthetic_test    the 10 synthetic test grids of Table 2 (also in table2_synthetic/data/test)  (0.1 MB)
     field_train       22,000 synthetic grids, 400 m spacing: training set of the Table-3 networks (182 MB)
 
-The field test patches of Table 3 are not on Zenodo: they cannot be redistributed (see table3_field/data/README.md).
+Only field_test is needed to reproduce the tables (Table 3); the training sets are for retraining.
 
 Usage:
-    python scripts/download_data.py                          # all three datasets
+    python scripts/download_data.py field_test               # the data needed for Table 3
+    python scripts/download_data.py                          # all four datasets
     python scripts/download_data.py synthetic_train          # only the named ones
     python scripts/download_data.py --from-dir DIR           # use archives already downloaded by hand into DIR
     python scripts/download_data.py --keep-zip               # keep the archives in datasets/
@@ -27,10 +29,26 @@ from download_weights import ZENODO_RECORD, ZENODO_URL, download, md5  # noqa: E
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATASETS = {
     # name: (number of .mat files, MD5 of <name>.zip)
+    "field_test": (10, "80ee86573d8343445a0144e94d21b55f"),
     "synthetic_train": (22000, "9bd4d5e7cca2210a7a11f53c42ff2736"),
     "synthetic_test": (10, "422aeaf7954ac5c31928a9314ed4ed06"),
     "field_train": (22000, "e43cde311f9eacb2e8313af8634764e5"),
 }
+INSTALL = {  # datasets that the notebooks read from a folder of the repository
+    "field_test": os.path.join(ROOT, "table3_field", "data", "test"),
+}
+
+
+def install(name, target):
+    """Copy the unpacked files of ``name`` to the folder where the notebooks read them."""
+    if name not in INSTALL:
+        return
+    dest = INSTALL[name]
+    os.makedirs(dest, exist_ok=True)
+    for f in sorted(os.listdir(target)):
+        if f.endswith(".mat"):
+            shutil.copy2(os.path.join(target, f), os.path.join(dest, f))
+    print(f"              copied to {os.path.relpath(dest, ROOT)}")
 
 
 def count_mat(folder):
@@ -57,6 +75,7 @@ def main():
         target = os.path.join(args.out, name)
         if count_mat(target) == n_files:
             print(f"OK (present)  {name}: {n_files} files")
+            install(name, target)
             continue
         if args.from_dir:
             archive = os.path.join(args.from_dir, name + ".zip")
@@ -88,6 +107,8 @@ def main():
         ok &= good
         print(f"{'OK           ' if good else 'INCOMPLETE   '} {name}: {count_mat(target)} files in "
               f"{os.path.relpath(target, ROOT)}")
+        if good:
+            install(name, target)
     if not ok:
         sys.exit("Some datasets are missing or corrupt (see above).")
 

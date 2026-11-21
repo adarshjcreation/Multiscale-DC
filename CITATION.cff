@@ -6,7 +6,7 @@ license: MIT
 identifiers:
   - type: doi
     value: "10.5281/zenodo.24340552"
-    description: "Pretrained weights and synthetic datasets (Zenodo)"
+    description: "Pretrained weights and datasets (Zenodo)"
 repository-code: "https://github.com/adarshjcreation/Multiscale-DC"
 authors:
   - family-names: Jain
@@ -35,14 +35,10 @@ preferred-citation:
   url: "https://arxiv.org/abs/2510.21191"
 references:
   - type: dataset
-    title: "Pretrained weights and synthetic datasets for \"Multiscale Learning for Downward Continuation of Gravity Data\""
+    title: "Pretrained weights and datasets for \"Multiscale Learning for Downward Continuation of Gravity Data\""
     authors:
       - family-names: Jain
         given-names: Adarsh
-      - family-names: Bharadwaj
-        given-names: Pawan
-      - family-names: Seelamantula
-        given-names: Chandra Sekhar
     publisher:
       name: Zenodo
     version: "1.0"

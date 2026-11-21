@@ -3,9 +3,10 @@
 # Usage: bash scripts/run_all.sh            (uses the Jupyter kernel "python3")
 #        KERNEL=myenv bash scripts/run_all.sh
 set -euo pipefail
-# the field data are not part of the repository (see data/README.md)
+# the field data are on Zenodo, not in git: python scripts/download_data.py field_test (see data/README.md)
 if ! python "$(dirname "$0")/check_data.py" > /dev/null; then
-  echo "Table 3 needs the 10 field test patches in data/test (not included; see data/README.md)." >&2
+  echo "Table 3 needs the 10 field test patches in data/test: run python scripts/download_data.py field_test" >&2
+  echo "in the top folder of the repository (see data/README.md)." >&2
   python "$(dirname "$0")/check_data.py" >&2 || true
   exit 1
 fi
